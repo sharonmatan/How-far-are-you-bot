@@ -1,1 +1,0 @@
-.bot_settings1.py
