@@ -1,9 +1,6 @@
-import json
 import logging
-import typing
 from cmath import sin, cos, sqrt, asin
 from math import radians
-from typing import Union
 import requests
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
@@ -47,7 +44,7 @@ def get_location(update, context):
     user_text = update.message.text
     params['q'] = user_text
     r = requests.get("https://nominatim.openstreetmap.org/search", params)
-    r.raise_for_status()  # will raise an exception for HTTp status code != 200
+    r.raise_for_status()
     data = r.json()
     distance["destination"] = float(data[0]['lon']), float(data[0]['lat'])
     print(distance)
@@ -77,20 +74,12 @@ def cancel(update, context):
 
 
 def error(update, context):
-    """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
 def main():
-    # Create the Updater and pass it your bot's token.
-    # Make sure to set use_context=True to use the new context based callbacks
-    # Post version 12 this will no longer be necessary
     updater = Updater(token=bot_settings1.BOT_TOKEN, use_context=True)
-
-    # Get the dispatcher to register handlers
     dp = updater.dispatcher
-
-    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
 
@@ -98,21 +87,11 @@ def main():
             LOCATION: [MessageHandler(Filters.location, location)],
             GET_LOCATION: [MessageHandler(Filters.text, get_location)]
         },
-
         fallbacks=[CommandHandler('cancel', cancel)]
     )
-
     dp.add_handler(conv_handler)
-
-    # log all errors
     dp.add_error_handler(error)
-
-    # Start the Bot
     updater.start_polling()
-
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
 
